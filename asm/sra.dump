@@ -18,7 +18,7 @@ Disassembly of section .text.init:
 0000001c <test_3>:
   1c:	800000b7          	lui	x1,0x80000
   20:	00100113          	addi	x2,x0,1
-  24:	4020d733          	sra	x14,x1,x2
+  24:	4020d733          	sra	x14,x1,x2 #x1 = 80000000 , x2 = 1
   28:	c00003b7          	lui	x7,0xc0000
   2c:	00300193          	addi	x3,x0,3
   30:	56771863          	bne	x14,x7,5a0 <fail>

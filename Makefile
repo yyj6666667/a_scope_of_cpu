@@ -1,6 +1,8 @@
 VSRC = $(wildcard vsrc/ram.v mySoC/*) 
 CSRC = $(wildcard golden_model/*.c) $(wildcard golden_model/stage/*.c) $(wildcard golden_model/peripheral/*.c) $(wildcard csrc/*.c csrc/*.cpp)
-SIM_OPTS = --trace -Wno-lint -Wno-style -Wno-TIMESCALEMOD
+SIM_OPTS = --lint-only
+#让我们说中文
+#SIM_OPTS = --trace -Wno-lint -Wno-style -Wno-TIMESCALEMOD
 TEST = addi
 TESTFILE = meminit.bin
 PWD = $(shell pwd)
