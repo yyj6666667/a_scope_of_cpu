@@ -3,13 +3,14 @@
 `include "defines.vh"
 
 module myCPU (
+    output wire[31:0]   inst_,  //delete
     input  wire         cpu_rst,
     input  wire         cpu_clk,
  
     // Interface to Bridge
     input  wire [31:0]  data_to_cpu,  
     output wire         en_data_trans,
-    output wire [31:0]  Bus_addr,
+    output wire [31:0]  addr_out,
     output wire [31:0]  Bus_wdata
 
 `ifdef RUN_TRACE
@@ -21,7 +22,7 @@ module myCPU (
     output wire [31:0]  debug_wb_value
 `endif
 );
-    
+assign    inst_ = inst;   //delete
     wire [31:0] pc;
     wire [31:0]  alu_c;
     // TODO: 完成你自己的单周期CPU设计
@@ -57,7 +58,7 @@ module myCPU (
     assign func3     = inst[14:12];
     assign func7     = inst[31:25];
 
-    assign Bus_addr  = alu_c;
+    assign addr_out  = alu_c;
     assign Bus_wdata = rd_2;
     //实例化
     CONTROL u_CONTROL(

@@ -48,20 +48,31 @@ module Bridge (
     input  wire [31:0]  rdata_from_timer
 );
 
-    wire access_mem = (addr_from_cpu[31:12] != 20'hFFFFF) ? 1'b1 : 1'b0;
+    wire access_mem = (addr_from_cpu[31:12] == 20'hFFFFF) ? 1'b0 : 1'b1;
     wire access_dig = (addr_from_cpu == `PERI_ADDR_DIG) ? 1'b1 : 1'b0;
     wire access_led = (addr_from_cpu == `PERI_ADDR_LED) ? 1'b1 : 1'b0;
     wire access_sw  = (addr_from_cpu == `PERI_ADDR_SW ) ? 1'b1 : 1'b0;
     wire access_btn = (addr_from_cpu == `PERI_ADDR_BTN) ? 1'b1 : 1'b0;
     wire access_timer_read =(addr_from_cpu ==`PERI_ADDR_TIMER_READ) ? 1'b1 : 1'b0;
     wire access_timer_write=(addr_from_cpu == `PERI_ADDR_TIMER_WRITE) ? 1'b1 : 1'b0;
-    wire [6:0] access_bit = { access_mem,
-                              access_dig,
-                              access_led,
+    wire [6:0] access_bit = { access_mem,                            
                               access_sw,
+                              access_dig,
+                              access_led,                             
                               access_btn,
                               access_timer_read,
                               access_timer_write};
+    always @(*) begin
+        casex (access_bit)
+            7'b1??????: rdata_to_cpu = rdata_from_dram;
+            //dig 不宜在此，容易出lagux
+            7'b0100000: rdata_to_cpu = rdata_from_sw;
+            7'b0000100: rdata_to_cpu = rdata_from_btn;
+            
+            default:  rdata_to_cpu = 32'hDEAD_FFFF;
+        endcase
+    end
+    
 
     // DRAM
     // assign rst_to_dram  = rst_from_cpu;
@@ -100,15 +111,5 @@ module Bridge (
     assign we_to_timer   = we_from_cpu & access_timer_write;
     assign wdata_to_timer= wdata_from_cpu;
 
-    // Select read data towards CPU
-    always @(*) begin
-        casex (access_bit)
-            7'b1??????: rdata_to_cpu = rdata_from_dram;
-            
-            7'b0001000: rdata_to_cpu = rdata_from_sw;
-            7'b0000100: rdata_to_cpu = rdata_from_btn;
-            default:  rdata_to_cpu = 32'hDEAD_FFFF;
-        endcase
-    end
 
 endmodule

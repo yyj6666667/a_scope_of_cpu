@@ -3,7 +3,9 @@
 `include "defines.vh"
 
 module miniRV_SoC (
-    input  wire         fpga_rst,   //!注意在下板之前改回来！原来是fpga_rstn
+    output wire [31:0]  watch, //delete
+    output wire [31:0]  inst,  //delete
+    input  wire         fpga_rstn,   //!注意在下板之前改回来！原来是!fpga_rstnn
     input  wire         fpga_clk,   //
 
     input  wire [15:0]  sw,         //
@@ -14,8 +16,7 @@ module miniRV_SoC (
     output wire [ 7:0]  led_seg1,   //
     //位选信号
     output wire [ 7:0]  dig_sel, //
-    output wire [15:0]  led
-
+    output wire [15:0]  led 
 
 `ifdef RUN_TRACE
     ,// Debug Interface
@@ -26,6 +27,7 @@ module miniRV_SoC (
     output wire [31:0]  debug_wb_value      // 指令写回时，写入寄存器的值 (若wb_ena或wb_have_inst=0，此项可为任意值)
 `endif
    );
+    assign watch = data_to_cpu;//delete
 
     wire        pll_lock;
     wire        pll_clk;
@@ -67,7 +69,7 @@ module miniRV_SoC (
     assign cpu_clk = pll_clk & pll_lock;
 
     cpuclk u_clkgen (
-        // .resetn     (fpga_rst),
+        // .resetn     (!fpga_rstn),
         .clk_in1    (fpga_clk),
         .clk_out1   (pll_clk),
         .locked     (pll_lock)
@@ -75,11 +77,12 @@ module miniRV_SoC (
 `endif
     
     myCPU u_cpu (
-        .cpu_rst            (fpga_rst), //原来是fpga_rst
+        .inst_               (inst),   //delete
+        .cpu_rst            (!fpga_rstn), //原来是!fpga_rstn
         .cpu_clk            (cpu_clk),
 
         // Interface to Bridge
-        .Bus_addr           (Bus_addr),
+        .addr_out           (Bus_addr),
         .data_to_cpu        (data_to_cpu),//cpu read from 
         .en_data_trans      (en_data_trans),
         .Bus_wdata          (Bus_wdata)
@@ -97,7 +100,7 @@ module miniRV_SoC (
     
     Bridge u_bridge (       
         // Interface to CPU
-        .rst_from_cpu       (fpga_rst), //原来是fpga_rst
+        .rst_from_cpu       (!fpga_rstn), //原来是!fpga_rstn
         .clk_from_cpu       (cpu_clk),
         .addr_from_cpu      (Bus_addr),
         .we_from_cpu        (en_data_trans),
@@ -151,7 +154,7 @@ module miniRV_SoC (
         .dig_sel(dig_sel),
         //input below
         .clk(cpu_clk),
-        .rst(fpga_rst),
+        .rst(!fpga_rstn),
         .write_enable(write_enable_to_dig), // b_control产生
         .data_from_bridge(wdata_to_dig)     //极有可能这个data来不及写进去，危险，时间紧
         
