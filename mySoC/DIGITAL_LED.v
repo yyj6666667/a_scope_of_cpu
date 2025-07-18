@@ -28,6 +28,7 @@ module DIGITAL_LED(
     input   write_enable,
     input  [31:0] data_from_bridge
     );
+    
     reg [31:0] data;
     wire [63:0] data_after_mapping;
     //移位流水线,跟随固有时钟，后序可能可以优化

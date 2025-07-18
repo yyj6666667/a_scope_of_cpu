@@ -33,7 +33,7 @@ module RF (
             case(rf_wsel)
                 `WB_ALU : wD = alu_c;
                 `WB_EXT : wD = sext;
-                `WB_DRAM: wD = data_to_cpu;
+                `WB_OUTSIDE: wD = data_to_cpu;
                 `WB_PC4 : wD = pc_4;
                 default : wD = data_to_cpu;       //应该包含了lw            //debug标志：有出入！
             endcase     

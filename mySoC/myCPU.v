@@ -3,7 +3,6 @@
 `include "defines.vh"
 
 module myCPU (
-    output wire[31:0]   inst_,  //delete
     input  wire         cpu_rst,
     input  wire         cpu_clk,
  
@@ -22,7 +21,6 @@ module myCPU (
     output wire [31:0]  debug_wb_value
 `endif
 );
-assign    inst_ = inst;   //delete
     wire [31:0] pc;
     wire [31:0]  alu_c;
     // TODO: 完成你自己的单周期CPU设计

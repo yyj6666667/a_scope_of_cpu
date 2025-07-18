@@ -11,7 +11,7 @@
 //rigester file
 `define WB_ALU          3'b000
 `define WB_EXT          3'b001
-`define WB_DRAM         3'b010
+`define WB_OUTSIDE         3'b010
 `define WB_PC4          3'b011
 
 //sext_op for immidiate extend

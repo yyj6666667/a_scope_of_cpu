@@ -3,11 +3,8 @@
 `include "defines.vh"
 
 module miniRV_SoC (
-    output wire [31:0]  watch, //delete
-    output wire [31:0]  inst,  //delete
-    input  wire         fpga_rstn,   //!注意在下板之前改回来！原来是!fpga_rstnn
+    input  wire         fpga_rstn,  //!注意在下板之前改回来！原来是!fpga_rstnn
     input  wire         fpga_clk,   //
-
     input  wire [15:0]  sw,         //
     input  wire [ 4:0]  button,     //
     //高4位段选信号
@@ -15,61 +12,51 @@ module miniRV_SoC (
     //低4位段选信号
     output wire [ 7:0]  led_seg1,   //
     //位选信号
-    output wire [ 7:0]  dig_sel, //
+    output wire [ 7:0]  dig_sel,    //
     output wire [15:0]  led 
 
 `ifdef RUN_TRACE
-    ,// Debug Interface
-    output wire         debug_wb_have_inst, // 当前时钟周期是否有指令写回 (对单周期CPU，可在复位后恒置1)
-    output wire [31:0]  debug_wb_pc,        // 当前写回的指令的PC (若wb_have_inst=0，此项可为任意值)
-    output              debug_wb_ena,       // 指令写回时，寄存器堆的写使能 (若wb_have_inst=0，此项可为任意值)
-    output wire [ 4:0]  debug_wb_reg,       // 指令写回时，写入的寄存器号 (若wb_ena或wb_have_inst=0，此项可为任意值)
-    output wire [31:0]  debug_wb_value      // 指令写回时，写入寄存器的值 (若wb_ena或wb_have_inst=0，此项可为任意值)
+    ,
+    output wire         debug_wb_have_inst, 
+    output wire [31:0]  debug_wb_pc,        
+    output              debug_wb_ena,       
+    output wire [ 4:0]  debug_wb_reg,       
+    output wire [31:0]  debug_wb_value      
 `endif
    );
-    assign watch = data_to_cpu;//delete
+    assign       led_seg1 = led_seg0;
+    wire         pll_lock;
+    wire         pll_clk;
+    wire         cpu_clk;
 
-    wire        pll_lock;
-    wire        pll_clk;
-    wire        cpu_clk;
+    wire [5:0]   enable_sel;
 
+    wire [31:0]  data_to_cpu;
+    wire         en_data_trans;
+    wire [31:0]  Bus_addr;
+    wire [31:0]  Bus_wdata;
 
-    // Interface between CPU and Bridge
-    wire [31:0] data_to_cpu;
-    wire        en_data_trans;
-    wire [31:0] Bus_addr;
-    wire [31:0] Bus_wdata;
-    
-    // Interface between bridge and DRAM
-    // wire         rst_bridge2dram;
-    wire         clk_bridge2dram;
-    wire [31:0]  addr_bridge2dram;
-    wire [31:0]  rdata_dram2bridge;
-    wire         we_bridge2dram;
-    wire [31:0]  wdata_bridge2dram;  
-    assign      addr_bridge2dram_pro = addr_bridge2dram[15:2];
+    wire [31:0]  wdata_to_dram;  
+    wire [31:0]  rdata_from_dram;
+    wire [31:0]  addr_to_dram ;
+    wire [13:0]  addr_to_dram_pro = addr_to_dram[15:2];
 
-    assign      led_seg1 = led_seg0;
-    // Interface between bridge and peripherals
-    // TODO: 在此定义总线桥与外设I/O接口电路模块的连接信号
-    // bridge and dig
-    wire  rst_to_dig;
-    wire  clk_to_dig;
-    wire  write_enable_to_dig; //相关信号由bri_control产生
-    wire  [31:0] wdata_to_dig;
-    //between bridge and sw
-    wire [31:0] sw_pro;
+    wire [31:0]  wdata_to_timer;
+    wire [31:0]  rdata_from_timer;
+
+    wire [15:0]  wdata_to_led;
+
+    wire [31:0]  rdata_from_sw; 
+
+    wire [31:0]  wdata_to_dig;
     
      
 `ifdef RUN_TRACE
-    // Trace调试时，直接使用外部输入时钟
-    assign cpu_clk = fpga_clk;
+        assign      cpu_clk = fpga_clk;
 `else
-    // 下板时，使用PLL分频后的时钟
-    assign cpu_clk = pll_clk & pll_lock;
-
+        assign      cpu_clk = pll_clk & pll_lock;
     cpuclk u_clkgen (
-        // .resetn     (!fpga_rstn),
+    //  .resetn     (!fpga_rstn),
         .clk_in1    (fpga_clk),
         .clk_out1   (pll_clk),
         .locked     (pll_lock)
@@ -77,7 +64,6 @@ module miniRV_SoC (
 `endif
     
     myCPU u_cpu (
-        .inst_               (inst),   //delete
         .cpu_rst            (!fpga_rstn), //原来是!fpga_rstn
         .cpu_clk            (cpu_clk),
 
@@ -99,69 +85,84 @@ module miniRV_SoC (
     
     
     Bridge u_bridge (       
-        // Interface to CPU
-        .rst_from_cpu       (!fpga_rstn), //原来是!fpga_rstn
-        .clk_from_cpu       (cpu_clk),
-        .addr_from_cpu      (Bus_addr),
-        .we_from_cpu        (en_data_trans),
-        .wdata_from_cpu     (Bus_wdata),
-        .rdata_to_cpu       (data_to_cpu),// to 表示数据的走向，我感觉这里read单指cpu获得data，write单指cpu往别的任何地方写
-        
-        // Interface to DRAM
-        // .rst_to_dram    (rst_bridge2dram),
-        .clk_to_dram        (clk_bridge2dram),
-        .addr_to_dram       (addr_bridge2dram),
-        .rdata_from_dram    (rdata_dram2bridge),
-        .we_to_dram         (we_bridge2dram),
-        .wdata_to_dram      (wdata_bridge2dram),
-        
-        // Interface to 7-seg digital LEDs
-        .we_to_dig          (write_enable_to_dig),
-        .wdata_to_dig                 (wdata_to_dig),
-
-        // Interface to LEDs
-        .rst_to_led         (),
-        .clk_to_led         (/* TODO */),
-        .addr_to_led        (/* TODO */),
-        .we_to_led          (/* TODO */),
-        .wdata_to_led       (/* TODO */),
-
-        // Interface to switches
-        .rdata_from_sw     (sw_pro),
-
-
-
-
-        // Interface to buttons
-        .rst_to_btn         (/* TODO */),
-        .clk_to_btn         (/* TODO */),
-        .addr_to_btn        (/* TODO */),
-        .rdata_from_btn     (/* TODO */)
+        .rst_from_cpu(fpga_rstn),
+        .clk_from_cpu(fpga_clk),   
+        .enable_sel(enable_sel),     
+        .rdata_to_cpu(data_to_cpu),
+        .wdata_from_cpu(Bus_wdata),
+        .we_from_cpu(en_data_trans), //doubt
+        .addr_from_cpu(Bus_addr),
+        .wdata_to_dram(wdata_to_dram),
+        .rdata_from_dram(rdata_from_dram),
+        .addr_to_dram(addr_to_dram),
+        .wdata_to_timer(wdata_to_timer),
+        .rdata_from_timer(rdata_from_timer),
+        .wdata_to_led(wdata_to_led),
+        .rdata_from_sw(rdata_from_sw),
+        .wdata_to_dig(wdata_to_dig)
     );
 
     DRAM u_DRAM (
-        .clk        (clk_bridge2dram),
-        .a          (Bus_addr[15:2]),
-        .spo        (rdata_dram2bridge),
-        .we         (we_bridge2dram),
-        .d          (wdata_bridge2dram)
+        .clk        (cpu_clk),
+        .a          (addr_to_dram_pro),
+        .spo        (rdata_from_dram),
+        .we         (enable_sel[0]),
+        .d          (wdata_to_dram)
     );
     
-    // TODO: 在此实例化你的外设I/O接口电路模块
-    //
     DIGITAL_LED u_digital_led(
-        .led_seg(led_seg0),    //seg1直接被seg0赋值
+        .led_seg(led_seg0),    
         .dig_sel(dig_sel),
-        //input below
+        //input 
         .clk(cpu_clk),
         .rst(!fpga_rstn),
-        .write_enable(write_enable_to_dig), // b_control产生
-        .data_from_bridge(wdata_to_dig)     //极有可能这个data来不及写进去，危险，时间紧
-        
+        .write_enable(enable_sel[2]), 
+        .data_from_bridge(wdata_to_dig)    
     );
     SW u_switch(
         .sw(sw),
-        .sw_pro(sw_pro)
+        .sw_pro(rdata_from_sw)
+    );
+    timer u_timer(
+        .clk(cpu_clk),
+        .rst(!fpga_rstn),
+        .wen(enable_sel[5]),
+        .windex_to_timer(wdata_to_timer),
+        .rdata(rdata_from_timer)
     );
 
 endmodule
+/*
+  // Interface to CPU
+  .rst_from_cpu       (!fpga_rstn), //原来是!fpga_rstn
+  .clk_from_cpu       (cpu_clk),
+  .addr_from_cpu      (Bus_addr),
+  .we_from_cpu        (en_data_trans),
+  .wdata_from_cpu     (Bus_wdata),
+  .rdata_to_cpu       (data_to_cpu),// to 表示数据的走向，我感觉这里read单指cpu获得data，write单指cpu往别的任何地方写
+  
+  // Interface to DRAM
+  // .rst_to_dram    (rst_bridge2dram),
+  .clk_to_dram        (clk_bridge2dram),
+  .addr_to_dram       (addr_bridge2dram),
+  .rdata_from_dram    (rdata_dram2bridge),
+  .we_to_dram         (we_bridge2dram),
+  .wdata_to_dram      (wdata_bridge2dram),
+  
+  // Interface to 7-seg digital LEDs
+  .we_to_dig          (write_enable_to_dig),
+  .wdata_to_dig                 (wdata_to_dig),
+  // Interface to LEDs
+  .rst_to_led         (),
+  .clk_to_led         (/* TODO ),
+  .addr_to_led        (/* TODO ),
+  .we_to_led          (/* TODO ),
+  .wdata_to_led       (/* TODO ),
+  // Interface to switches
+  .rdata_from_sw     (sw_pro),
+  // Interface to buttons
+  .rst_to_btn         (/* TODO ),
+  .clk_to_btn         (/* TODO ),
+  .addr_to_btn        (/* TODO ),
+  .rdata_from_btn     (/* TODO )
+  */

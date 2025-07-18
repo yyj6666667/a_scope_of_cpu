@@ -55,7 +55,7 @@ module CONTROL #( //according to miniRV指令总表
         case(opcode) 
             R_: rf_wsel = `WB_ALU;
             I_: rf_wsel = `WB_ALU;
-            LW_: rf_wsel =`WB_DRAM;
+            LW_: rf_wsel =`WB_OUTSIDE;
             JALR_:rf_wsel=`WB_PC4;
             LUI_: rf_wsel=`WB_EXT;
             JAL_: rf_wsel=`WB_PC4;
