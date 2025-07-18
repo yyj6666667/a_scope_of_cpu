@@ -24,5 +24,5 @@ module SW(
         input wire [15:0] sw,
         output wire [31:0] sw_pro
     );
-    assign sw_pro = {16'd0, sw};
+    assign sw_pro = {30'd0, sw[9:8]};
 endmodule

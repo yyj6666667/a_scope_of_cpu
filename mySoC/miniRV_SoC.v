@@ -106,7 +106,7 @@ module miniRV_SoC (
         .clk        (cpu_clk),
         .a          (addr_to_dram_pro),
         .spo        (rdata_from_dram),
-        .we         (enable_sel[0]),
+        .we         (enable_sel[5]),
         .d          (wdata_to_dram)
     );
     
@@ -116,7 +116,7 @@ module miniRV_SoC (
         //input 
         .clk(cpu_clk),
         .rst(!fpga_rstn),
-        .write_enable(enable_sel[2]), 
+        .write_enable(enable_sel[3]), 
         .data_from_bridge(wdata_to_dig)    
     );
     SW u_switch(
@@ -126,7 +126,7 @@ module miniRV_SoC (
     timer u_timer(
         .clk(cpu_clk),
         .rst(!fpga_rstn),
-        .wen(enable_sel[5]),
+        .wen(enable_sel[0]),
         .windex_to_timer(wdata_to_timer),
         .rdata(rdata_from_timer)
     );
