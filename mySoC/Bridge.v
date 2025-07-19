@@ -43,7 +43,7 @@ module Bridge (
             6'b1?????: rdata_to_cpu = rdata_from_dram;
             6'b010000: rdata_to_cpu = rdata_from_sw;
             6'b000010: rdata_to_cpu = rdata_from_timer;   
-            default:   rdata_to_cpu = 32'hdeadbeef;
+            default:   rdata_to_cpu = 32'hdeadbfee;
         endcase
     end
     assign wdata_to_led   =   (access_led)         ? wdata_from_cpu[15:0] : 16'hDEAD  ;
