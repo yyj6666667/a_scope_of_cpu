@@ -56,7 +56,7 @@ module myCPU (
     assign func3     = inst[14:12];
     assign func7     = inst[31:25];
 
-    assign addr_out  = alu_c;
+    assign addr_out  = (en_data_trans) ? alu_c : 32'hFFFF_FFFF; //直接在cpu接口处控制，预期处理问题十
     assign Bus_wdata = rd_2;
     //实例化
     CONTROL u_CONTROL(

@@ -126,10 +126,11 @@ module CONTROL #( //according to miniRV指令总表
         endcase
     end
 
-//for dram
+//for outside
     always @ (*) begin
         case(opcode) 
             SW_:    en_data_trans = `WRITE;
+            LW_:    en_data_trans = `WRITE;
             default: en_data_trans = `READ;
         endcase
     end

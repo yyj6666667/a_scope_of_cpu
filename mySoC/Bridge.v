@@ -26,7 +26,7 @@ module Bridge (
     output wire [31:0]  wdata_to_dig
 );
 
-    wire access_mem = (addr_from_cpu[31:12] == 20'hFFFFF) ? 1'b0 : 1'b1;
+    wire access_mem = (addr_from_cpu[31:12] != 20'hFFFFF) ? 1'b1 : 1'b0;
     wire access_dig = (addr_from_cpu == `PERI_ADDR_DIG) ? 1'b1 : 1'b0;
     wire access_led = (addr_from_cpu == `PERI_ADDR_LED) ? 1'b1 : 1'b0;
     wire access_sw  = (addr_from_cpu == `PERI_ADDR_SW ) ? 1'b1 : 1'b0;
@@ -46,11 +46,11 @@ module Bridge (
             default:   rdata_to_cpu = 32'hdeadbeef;
         endcase
     end
-    assign wdata_to_led   =   (access_led)         ? wdata_from_cpu[15:0] : 16'd0 ;
-    assign wdata_to_dig   =   (access_dig)         ? wdata_from_cpu       : 32'd0 ; //有改动，没有直接传了
-    assign wdata_to_timer =   (access_timer_write) ? wdata_from_cpu       : 32'd0 ; 
-    assign wdata_to_dram  =   (access_mem)         ? wdata_from_cpu       : 32'd0 ;
-    assign addr_to_dram   =   (access_mem)         ? addr_from_cpu        : 32'd0 ;
+    assign wdata_to_led   =   (access_led)         ? wdata_from_cpu[15:0] : 16'hDEAD  ;
+    assign wdata_to_dig   =   (access_dig)         ? wdata_from_cpu       : 32'hDEAD_6666  ; //haha
+    assign wdata_to_timer =   (access_timer_write) ? wdata_from_cpu       : 32'hDEAD_6666  ; 
+    assign wdata_to_dram  =   (access_mem)         ? wdata_from_cpu       : 32'hDEAD_6666 ;
+    assign addr_to_dram   =   (access_mem)         ? addr_from_cpu        : 32'hDEAD_6666  ;
 
 endmodule
 
