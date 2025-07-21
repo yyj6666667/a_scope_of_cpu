@@ -39,9 +39,9 @@ module Bridge (
                              access_timer_write};
     always @(*) begin
         casex (enable_sel)
-            6'b1?????: rdata_to_cpu = rdata_from_dram;
-            6'b010000: rdata_to_cpu = rdata_from_sw;
-            6'b000010: rdata_to_cpu = rdata_from_timer;   
+            6'b100010: rdata_to_cpu = rdata_from_timer;  
+            6'b110000: rdata_to_cpu = rdata_from_sw;
+            6'b1?????: rdata_to_cpu = rdata_from_dram; 
             default:   rdata_to_cpu = 32'hdeadbfee;
         endcase
     end
@@ -52,78 +52,3 @@ module Bridge (
     assign addr_to_dram   =   (we_from_cpu[0])         ? addr_from_cpu        : 32'hDEAD_6666  ;
 
 endmodule
-
-
- /*  
-   // Interface to DRAM
-   // output wire         rst_to_dram,
-   output wire         clk_to_dram,
-   output wire [31:0]  addr_to_dram,
-   input  wire [31:0]  rdata_from_dram,
-   output wire         we_to_dram,
-   output wire [31:0]  wdata_to_dram,
-   
-   // Interface to 7-seg digital LEDs
-   output wire         we_to_dig,
-   output wire [31:0]  wdata_to_dig,
-   // Interface to LEDs
-   output wire         rst_to_led,
-   output wire         clk_to_led,
-   output wire [31:0]  addr_to_led,
-   output wire         we_to_led,
-   output wire [15:0]  wdata_to_led,
-   // Interface to switches
-   input  wire [31:0]  rdata_from_sw,
-   // Interface to buttons
-   output wire         rst_to_btn,
-   output wire         clk_to_btn,
-   output wire [31:0]  addr_to_btn,
-   input  wire [31:0]  rdata_from_btn,
-   // with timer
-   output wire         rst_to_timer,
-   output wire         clk_to_timer,
-   output wire         we_to_timer,
-   output wire [31:0]  wdata_to_timer,
-   input  wire [31:0]  rdata_from_timer
-  */ 
-
-
-
-/*
-    // DRAM
-    // assign rst_to_dram  = rst_from_cpu;
-    assign clk_to_dram   = clk_from_cpu;
-    assign addr_to_dram  = addr_from_cpu;
-    assign we_to_dram    = we_from_cpu & access_mem;
-    assign wdata_to_dram = wdata_from_cpu;
-
-    // 7-seg LEDs
-    assign rst_to_dig    = rst_from_cpu;
-    assign clk_to_dig    = clk_from_cpu;
-    assign we_to_dig     = we_from_cpu & access_dig;
-    assign wdata_to_dig  = wdata_from_cpu;
-
-    // LEDs
-    assign rst_to_led    = rst_from_cpu;
-    assign clk_to_led    = clk_from_cpu;
-    assign addr_to_led   = addr_from_cpu;
-    assign we_to_led     = we_from_cpu & access_led;
-    assign wdata_to_led  = wdata_from_cpu;
-    
-    // Switches
-    assign rst_to_sw     = rst_from_cpu;
-    assign clk_to_sw     = clk_from_cpu;
-    assign addr_to_sw    = addr_from_cpu;
-
-
-    // Buttons
-    assign rst_to_btn    = rst_from_cpu;
-    assign clk_to_btn    = clk_from_cpu;
-    assign addr_to_btn   = addr_from_cpu;
-
-    //timer
-    assign rst_to_timer  = rst_from_cpu;
-    assign clk_to_timer  = clk_from_cpu;
-    assign we_to_timer   = we_from_cpu & access_timer_write;
-    assign wdata_to_timer= wdata_from_cpu;
-*/
