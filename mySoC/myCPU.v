@@ -8,7 +8,7 @@ module myCPU (
  
     // Interface to Bridge
     input  wire [31:0]  data_to_cpu,  
-    output wire         en_data_trans,
+    output wire [1: 0]  en_data_trans,
     output wire [31:0]  addr_out,
     output wire [31:0]  Bus_wdata
 

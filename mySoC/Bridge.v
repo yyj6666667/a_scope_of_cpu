@@ -9,7 +9,7 @@ module Bridge (
 
     output reg  [31:0]  rdata_to_cpu,
     input  wire [31:0]  wdata_from_cpu,
-    input  wire         we_from_cpu,
+    input  wire [1 :0]  we_from_cpu,
     input  wire [31:0]  addr_from_cpu,
 
     output wire [31:0]  wdata_to_dram,
@@ -26,13 +26,12 @@ module Bridge (
     output wire [31:0]  wdata_to_dig
 );
 
-    wire access_mem = (addr_from_cpu[31:12] != 20'hFFFFF) ? 1'b1 : 1'b0;
-    wire access_dig = (addr_from_cpu == `PERI_ADDR_DIG) ? 1'b1 : 1'b0;
+    wire access_dig = (addr_from_cpu == `PERI_ADDR_DIG && we_from_cpu[1]) ? 1'b1 : 1'b0;
     wire access_led = (addr_from_cpu == `PERI_ADDR_LED) ? 1'b1 : 1'b0;
     wire access_sw  = (addr_from_cpu == `PERI_ADDR_SW ) ? 1'b1 : 1'b0;
     wire access_timer_read =(addr_from_cpu ==`PERI_ADDR_TIMER_READ) ? 1'b1 : 1'b0;
     wire access_timer_write=(addr_from_cpu == `PERI_ADDR_TIMER_WRITE) ? 1'b1 : 1'b0;
-    assign   enable_sel  = { access_mem,                            
+    assign   enable_sel  = { we_from_cpu[0],  //if it is one , then its lw or sw                            
                              access_sw,
                              access_dig,
                              access_led,                             
@@ -49,8 +48,8 @@ module Bridge (
     assign wdata_to_led   =   (access_led)         ? wdata_from_cpu[15:0] : 16'hDEAD  ;
     assign wdata_to_dig   =   (access_dig)         ? wdata_from_cpu       : 32'hDEAD_6666  ; //haha
     assign wdata_to_timer =   (access_timer_write) ? wdata_from_cpu       : 32'hDEAD_6666  ; 
-    assign wdata_to_dram  =   (access_mem)         ? wdata_from_cpu       : 32'hDEAD_6666 ;
-    assign addr_to_dram   =   (access_mem)         ? addr_from_cpu        : 32'hDEAD_6666  ;
+    assign wdata_to_dram  =   (we_from_cpu[1])         ? wdata_from_cpu       : 32'hDEAD_6666 ;
+    assign addr_to_dram   =   (we_from_cpu[0])         ? addr_from_cpu        : 32'hDEAD_6666  ;
 
 endmodule
 

@@ -19,7 +19,7 @@ module CONTROL #( //according to miniRV指令总表
     output reg      rf_we,
     output reg      alu_b_sel,
     output reg [3:0]alu_op,
-    output reg      en_data_trans
+    output reg [1:0]en_data_trans
 );
 
 
@@ -129,8 +129,8 @@ module CONTROL #( //according to miniRV指令总表
 //for outside
     always @ (*) begin
         case(opcode) 
-            SW_:    en_data_trans = `WRITE;
-            LW_:    en_data_trans = `WRITE;
+            SW_:    en_data_trans = `WRITE_SW;
+            LW_:    en_data_trans = `WRITE_LW;
             default: en_data_trans = `READ;
         endcase
     end

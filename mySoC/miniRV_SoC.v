@@ -3,7 +3,7 @@
 `include "defines.vh"
 
 module miniRV_SoC (
-    input  wire         fpga_rstn,  //!注意在下板之前改回来！原来是!fpga_rstnn
+    input  wire         fpga_rst,  //!注意在下板之前改回来！原来是fpga_rstn
     input  wire         fpga_clk,   //
     input  wire [15:0]  sw,         //
     input  wire [ 4:0]  button,     //
@@ -32,7 +32,7 @@ module miniRV_SoC (
     wire [5:0]   enable_sel;
 
     wire [31:0]  data_to_cpu;
-    wire         en_data_trans;
+    wire [1 :0]  en_data_trans;
     wire [31:0]  Bus_addr;
     wire [31:0]  Bus_wdata;
 
@@ -56,7 +56,7 @@ module miniRV_SoC (
 `else
         assign      cpu_clk = pll_clk & pll_lock;
     cpuclk u_clkgen (
-    //  .resetn     (!fpga_rstn),
+    //  .resetn     (fpga_rst),
         .clk_in1    (fpga_clk),
         .clk_out1   (pll_clk),
         .locked     (pll_lock)
@@ -64,7 +64,7 @@ module miniRV_SoC (
 `endif
     
     myCPU u_cpu (
-        .cpu_rst            (!fpga_rstn), //原来是!fpga_rstn
+        .cpu_rst            (fpga_rst), //原来是fpga_rst
         .cpu_clk            (cpu_clk),
 
         // Interface to Bridge
@@ -106,7 +106,7 @@ module miniRV_SoC (
         .clk        (cpu_clk),
         .a          (addr_to_dram_pro),
         .spo        (rdata_from_dram),
-        .we         (enable_sel[5]),
+        .we         (en_data_trans[1]),
         .d          (wdata_to_dram)
     );
     
@@ -115,7 +115,7 @@ module miniRV_SoC (
         .dig_sel(dig_sel),
         //input 
         .clk(cpu_clk),
-        .rst(!fpga_rstn),
+        .rst(fpga_rst),
         .write_enable(enable_sel[3]), 
         .data_from_bridge(wdata_to_dig)    
     );
@@ -125,7 +125,7 @@ module miniRV_SoC (
     );
     timer u_timer(
         .clk(cpu_clk),
-        .rst(!fpga_rstn),
+        .rst(fpga_rst),
         .wen(enable_sel[0]),
         .windex_to_timer(wdata_to_timer),
         .rdata(rdata_from_timer)
@@ -134,7 +134,7 @@ module miniRV_SoC (
 endmodule
 /*
   // Interface to CPU
-  .rst_from_cpu       (!fpga_rstn), //原来是!fpga_rstn
+  .rst_from_cpu       (fpga_rst), //原来是fpga_rst
   .clk_from_cpu       (cpu_clk),
   .addr_from_cpu      (Bus_addr),
   .we_from_cpu        (en_data_trans),

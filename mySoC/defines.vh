@@ -1,5 +1,5 @@
 // Annotate this macro before synthesis
- //`define RUN_TRACE
+ `define RUN_TRACE
 
 // TODO: 在此处定义你的宏  //已进行代码检查
 // npc_op
@@ -41,8 +41,9 @@
 `define ALUB_EXT       1'b1 
 
 //dram
-`define READ           1'b0
-`define WRITE          1'b1
+`define READ              2'b00
+`define WRITE_SW          2'b11
+`define WRITE_LW          2'b01
 
 //rf_we  cause of only needing one value, so i ignore them
 
