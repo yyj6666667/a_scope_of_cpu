@@ -12,10 +12,20 @@ module DIGITAL_LED(
     
     reg [31:0] data;
     wire [63:0] data_after_mapping;
-    //移位流水线,跟随固有时钟，后序可能可以优化
+    reg [15:0] clk_end;
+    reg [15:0] clk_count;
+
     always @(posedge clk or posedge rst) begin
-        if(rst) dig_sel <= 8'b0000_0001;
-        else    dig_sel <= {dig_sel[6:0] , dig_sel[7]};
+        if(rst) begin 
+                dig_sel <= 8'b0000_0001;
+                clk_end <= 16'd50000;
+                clk_count <= 16'd0;
+        end
+        else  if(clk_count == clk_end)begin
+                dig_sel <= {dig_sel[6:0] , dig_sel[7]};
+                clk_count <= 16'd0;
+        end
+        else    clk_count <= clk_count + 1;
     end
     //read data
     always @(posedge clk or posedge rst) begin
